@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LeWM Self-Driving — A Latent World Model for Autonomous Driving</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0d0f14;
+  --surface:   #13161e;
+  --border:    #1e2332;
+  --text:      #d8dce8;
+  --muted:     #6b7280;
+  --accent:    #4f9cf9;
+  --accent2:   #a78bfa;
+  --green:     #34d399;
+  --orange:    #fb923c;
+  --red:       #f87171;
+  --serif:     'Source Serif 4', Georgia, serif;
+  --sans:      'Outfit', system-ui, sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Layout ─── */
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+section {
+  padding: 72px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ─── Hero ─── */
+
+.hero {
+  padding: 90px 0 60px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.venue-tag {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid rgba(79,156,249,0.35);
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 28px;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(26px, 4.5vw, 44px);
+  font-weight: 700;
+  line-height: 1.2;
+  color: #eef0f8;
+  max-width: 780px;
+  margin: 0 auto 20px;
+}
+
+h1 span {
+  color: var(--accent);
+}
+
+.subtitle {
+  font-family: var(--sans);
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 600px;
+  margin: 0 auto 36px;
+  line-height: 1.6;
+}
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid transparent;
+}
+.btn-primary:hover { background: #3b8ef0; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ─── Stats strip ─── */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.stat {
+  background: var(--surface);
+  padding: 22px 20px;
+  text-align: center;
+}
+
+.stat-val {
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 600;
+  color: #eef0f8;
+  display: block;
+  line-height: 1;
+}
+
+.stat-lbl {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* ─── Section headings ─── */
+
+h2 {
+  font-family: var(--serif);
+  font-size: 26px;
+  font-weight: 600;
+  color: #eef0f8;
+  margin-bottom: 8px;
+}
+
+h3 {
+  font-family: var(--sans);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+
+.section-intro {
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 680px;
+  margin-bottom: 36px;
+  line-height: 1.7;
+}
+
+/* ─── Result figures ─── */
+
+.figure {
+  margin: 32px 0;
+}
+
+.figure img {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.figure figcaption {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.figure figcaption strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ─── Two column grid ─── */
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 640px) { .two-col { grid-template-columns: 1fr; } }
+
+/* ─── Architecture box ─── */
+
+.arch-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px 32px;
+  margin: 28px 0;
+}
+
+.arch-box pre {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: #c8d0e4;
+  white-space: pre-wrap;
+}
+
+.arch-box pre .kw  { color: var(--accent2); }
+.arch-box pre .val { color: var(--green); }
+.arch-box pre .cmt { color: var(--muted); }
+
+/* ─── Highlight badges ─── */
+
+.badge-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+
+.badge {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 13px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+.badge-green  { background: rgba(52,211,153,0.12); color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
+.badge-blue   { background: rgba(79,156,249,0.12); color: var(--accent); border: 1px solid rgba(79,156,249,0.3); }
+.badge-purple { background: rgba(167,139,250,0.12);color: var(--accent2);border: 1px solid rgba(167,139,250,0.3); }
+.badge-orange { background: rgba(251,146,60,0.12); color: var(--orange); border: 1px solid rgba(251,146,60,0.3); }
+
+/* ─── Results table ─── */
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--sans);
+  font-size: 14px;
+  margin: 20px 0;
+}
+
+.results-table th {
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 2px solid var(--border);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.results-table td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.results-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+.check   { color: var(--green); font-weight: 700; }
+.partial { color: var(--orange); font-weight: 700; }
+.cross   { color: var(--red); font-weight: 700; }
+
+/* ─── Code block ─── */
+
+.code-block {
+  background: #0a0c11;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  overflow-x: auto;
+}
+
+.code-block pre {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.65;
+  color: #c8d0e4;
+}
+
+.code-block .comment { color: #4b5563; }
+.code-block .string  { color: var(--green); }
+.code-block .keyword { color: var(--accent2); }
+.code-block .cmd     { color: var(--accent); }
+
+/* ─── Citation ─── */
+
+.citation {
+  background: var(--surface);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 20px 24px;
+  margin: 20px 0;
+}
+
+.citation pre {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+/* ─── Footer ─── */
+
+footer {
+  padding: 40px 0;
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+footer a { color: var(--accent); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+/* ─── Prose ─── */
+
+p { margin-bottom: 16px; }
+
+.prose p:last-child { margin-bottom: 0; }
+
+ul {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+/* ─── Nav ─── */
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(13,15,20,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 0;
+}
+
+.nav-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-logo {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-links a {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--text); }
+
+@media (max-width: 500px) { .nav-links { display: none; } }
+
+</style>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">LeWM-Driving</a>
+    <div class="nav-links">
+      <a href="#results">Results</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#training">Training</a>
+      <a href="#code">Code</a>
+    </div>
+  </div>
+        <img src="docs/assets/t8_embedding_health.png" alt="Embedding health">
+
+<!-- ───────────────────────────── HERO ───────────────────────────────── -->
+
+<section class="hero">
+  <div class="container">
+    <div class="venue-tag">World Model / Self-Driving</div>
+    <h1>
+      <span>LeWM</span> Self-Driving<br>
+      A Latent World Model for Autonomous Driving
+        <img src="docs/assets/t9_temporal.png" alt="Temporal straightening">
+    <p class="subtitle">
+      Applying the LeWorldModel framework to Comma2k19 highway driving data.
+      End-to-end JEPA training from raw pixels — no pretrained encoder, no reconstruction loss.
+    </p>
+    <div class="btn-row">
+      <a href="https://github.com/your-username/lewm-driving" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.49.5.09.66-.22.66-.48v-1.69c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 6.8c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.480C19.137 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+        GitHub
+      </a>
+      <a href="https://arxiv.org/abs/2603.19312" class="btn btn-outline">arXiv Paper</a>
+      <a href="https://github.com/lucas-maes/le-wm" class="btn btn-outline">Official LeWM Repo</a>
+      <img src="docs/assets/VL1_choose_correct_future.png" alt="Future selection">
+
+    <div class="stats-grid">
+      <div class="stat">
+        <span class="stat-val">57.7M</span>
+        <div class="stat-lbl">Parameters</div>
+      </div>
+      <div class="stat">
+        <span class="stat-val">10x</span>
+        <div class="stat-lbl">Better than null</div>
+      </div>
+      <div class="stat">
+      <img src="docs/assets/t0_training_curves.png" alt="Training curves">
+        <div class="stat-lbl">Future selection</div>
+      </div>
+      <div class="stat">
+        <span class="stat-val">0/384</span>
+        <div class="stat-lbl">Collapsed dims</div>
+      </div>
+      <div class="stat">
+        <span class="stat-val">H100</span>
+        <div class="stat-lbl">Training hardware</div>
+      </div>
+      <div class="stat">
+        <img src="docs/assets/tv1_similarity.png" alt="Frame similarity">
+        <div class="stat-lbl">Encoder training</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ───────────────────────────── ABSTRACT ───────────────────────────── -->
+
+        <img src="docs/assets/tA_rollout.png" alt="CEM rollout">
+  <div class="container">
+    <h3>Abstract</h3>
+    <h2>End-to-end world modelling for highway driving</h2>
+    <div class="section-intro">
+      We adapt the LeWorldModel (LeWM) JEPA framework to the Comma2k19 self-driving dataset.
+      The model learns to predict future driving scenes in a compact latent space from raw 224x224
+      pixel observations and vehicle control signals, without any reconstruction objective or pretrained
+      vision backbone. SIGReg enforces a Gaussian-distributed latent space, preventing representation
+      collapse throughout training.
+    </div>
+
+      <img src="docs/assets/tsd4_planning.png" alt="Planning visualisation">
+      <span class="badge badge-blue">End-to-end from pixels</span>
+      <span class="badge badge-green">No pretrained encoder</span>
+      <span class="badge badge-purple">SIGReg anti-collapse</span>
+      <span class="badge badge-orange">Action-conditioned planning</span>
+      <span class="badge badge-blue">Comma2k19 dataset</span>
+    </div>
+
+    <div class="prose">
+      <p>
+        The encoder is a Vision Transformer (ViT, 384-dim hidden, 12 layers, patch size 14) that maps
+        each frame to a 384-dimensional CLS-token embedding via a projection MLP. The predictor is a
+        causal Transformer (8 layers, 16 heads) that autoregressively predicts the next embedding
+        conditioned on vehicle actions embedded via Adaptive Layer Normalization.
+      </p>
+      <p>
+        The training objective is the sum of a next-embedding MSE prediction loss, the SIGReg
+        regularisation term (with 2000-step linear warmup), and a cosine similarity smoothness term
+        on temporally adjacent embeddings. No reconstruction decoder is used during training.
+        A separate decoder is trained afterwards for visualisation only.
+      </p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ───────────────────────────── RESULTS ────────────────────────────── -->
+
+<section id="results">
+  <div class="container">
+    <h3>Results</h3>
+    <h2>Benchmarks and diagnostics</h2>
+    <p class="section-intro">
+      All results are from a single run: 20 epochs of encoder/predictor training on 4 chunks of
+      Comma2k19 (789 segments, ~33 hours of driving), followed by 25 epochs of decoder training on
+      the evaluation split.
+    </p>
+
+    <!-- BM1 -->
+    <div class="figure">
+      <img src="docs/assets/BM1_openloop.png" alt="Open-loop L2 error">
+      <figcaption>
+        <strong>Open-loop prediction (BM1).</strong>
+        Left: ADE (average displacement error in latent space) vs planning horizon.
+        The model (blue) achieves consistently lower error than the null constant predictor (red)
+        at all horizons. Center: Model/Null ratio — all values near 0.10–0.11, roughly 10x better
+        than chance. Right: Error distribution at horizon h=4.
+      </figcaption>
+    </div>
+
+    <!-- BM2 -->
+    <div class="figure">
+      <img src="docs/assets/BM2_action_sensitivity.png" alt="Action sensitivity">
+      <figcaption>
+        <strong>Action sensitivity (BM2).</strong>
+        L2 divergence in latent space when the model is given two different action sequences
+        from the same starting state. Mean divergence 0.508 — rated GOOD. Acceleration vs braking
+        produces the strongest signal (1.17), confirming the predictor is responsive to control input.
+        Coast vs acceleration also produces strong divergence (0.93).
+      </figcaption>
+    </div>
+
+    <!-- Two-column: BM3 + T3 -->
+    <div class="two-col">
+      <div class="figure">
+        <img src="docs/assets/BM3_cem.png" alt="CEM planner">
+        <figcaption>
+          <strong>CEM planner (BM3).</strong>
+          The Cross-Entropy Method optimiser consistently finds action sequences that bring the
+          predicted latent state closer to a goal embedding than random search (ratio 0.957,
+          reach 45%). CEM goal distance (4.97) beats both random (5.19) and zero-action (5.23)
+          baselines.
+        </figcaption>
+      </div>
+      <div class="figure">
+        <img src="docs/assets/t3_prediction.png" alt="Prediction quality">
+        <figcaption>
+          <strong>Multi-step prediction (T3).</strong>
+          Per-step latent MSE over 19 prediction steps across 50 sequences.
+          Mean MSE 0.0099. Error remains bounded with no runaway accumulation,
+          indicating stable autoregressive rollouts.
+        </figcaption>
+      </div>
+    </div>
+
+    <!-- BM4 -->
+    <div class="figure">
+      <img src="docs/assets/BM4_visual.png" alt="Real vs decoded frames">
+      <figcaption>
+        <strong>Decoder reconstructions (BM4).</strong>
+        Top row: real frames (context in blue, imagined future in orange).
+        Bottom row: frames decoded from predicted latents. The decoder was trained for
+        25 epochs only, accounting for the soft appearance. Scene geometry, sky/road structure,
+        and lighting are faithfully preserved. The encoder latent itself is precise —
+        the blurriness is a decoder capacity limit, not a representation quality issue.
+      </figcaption>
+    </div>
+
+    <!-- T2 latent space -->
+    <div class="figure">
+      <img src="docs/assets/t2_latent_tsne.png" alt="Latent space t-SNE">
+      <figcaption>
+        <strong>Latent space structure (T2).</strong>
+        t-SNE projection of 500 latent embeddings coloured by ground-truth vehicle signals.
+        Speed (top-left) shows clear spatial structure — high-speed clusters are well separated
+        from low-speed regions. The latent space organises by driving state without any explicit
+        supervision on these quantities.
+      </figcaption>
+    </div>
+
+    <!-- Two-column: T8 + T9 -->
+    <div class="two-col">
+      <div class="figure">
+        <img src="docs/assets/t8_embedding_health.png" alt="Embedding health">
+        <figcaption>
+          <strong>Embedding health (T8).</strong>
+          0/384 dimensions collapsed (all above threshold). Distribution closely matches the
+          SIGReg Gaussian target. Effective rank 34.9/384 at 20 epochs — this grows with
+          further training as the regulariser fully converges.
+        </figcaption>
+      </div>
+      <div class="figure">
+        <img src="docs/assets/t9_temporal.png" alt="Temporal straightening">
+        <figcaption>
+          <strong>Temporal straightening (T9).</strong>
+          Mean consecutive velocity cosine similarity 0.165, indicating emergent temporal
+          straightness without any explicit regularisation. Consistent with the findings of
+          Maes et al. 2026 on controlled environments.
+        </figcaption>
+      </div>
+    </div>
+
+    <!-- VL1 -->
+    <div class="figure">
+      <img src="docs/assets/VL1_choose_correct_future.png" alt="Future selection">
+      <figcaption>
+        <strong>Future-frame selection (VL1).</strong>
+        Given a context sequence and 4 candidate futures (1 real, 3 distractors), the model
+        selects the correct continuation 8/8 times (100%) by nearest-latent matching.
+      </figcaption>
+    </div>
+
+    <!-- Training curves -->
+    <div class="figure">
+      <img src="docs/assets/t0_training_curves.png" alt="Training curves">
+      <figcaption>
+        <strong>Training curves (T0).</strong>
+        Prediction loss and SIGReg converge smoothly over 20 epochs.
+      </figcaption>
+    </div>
+
+    <!-- Two-column: TV1 + tA -->
+    <div class="two-col">
+      <div class="figure">
+        <img src="docs/assets/tv1_similarity.png" alt="Frame similarity">
+        <figcaption>
+          <strong>Frame-to-frame similarity (TV1).</strong>
+          Diagonal-dominant cosine structure confirms temporal coherence in latent space.
+        </figcaption>
+      </div>
+      <div class="figure">
+        <img src="docs/assets/tA_rollout.png" alt="CEM rollout">
+        <figcaption>
+          <strong>CEM planning rollout (tA).</strong>
+          Multi-step imagined trajectories remain stable under optimized control sequences.
+        </figcaption>
+      </div>
+    </div>
+
+    <div class="figure">
+      <img src="docs/assets/tsd4_planning.png" alt="Planning visualisation">
+      <figcaption>
+        <strong>Latent planning (tsd4).</strong>
+        Full planning storyboard from context to goal-directed imagined trajectory.
+      </figcaption>
+    </div>
+
+    <div class="two-col">
+      <div class="figure">
+        <img src="docs/assets/tB_retrieval.png" alt="Retrieval quality">
+        <figcaption>
+          <strong>Retrieval quality (tB).</strong>
+          Latent nearest-neighbour retrieval improves speed and steering matching over random retrieval.
+        </figcaption>
+      </div>
+      <div class="figure">
+        <img src="docs/assets/tB_retrieval_visual.png" alt="Retrieval visuals">
+        <figcaption>
+          <strong>Retrieval visuals.</strong>
+          Query and neighbour panels illustrate semantic consistency in latent search.
+        </figcaption>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="figure">
+        <img src="docs/assets/tdec1_interpolation.png" alt="Decoder interpolation">
+        <figcaption>
+          <strong>Decoder interpolation (tdec1).</strong>
+          Smooth visual transitions under latent interpolation.
+        </figcaption>
+      </div>
+      <div class="figure">
+        <img src="docs/assets/tdec2_heatmap.png" alt="Decoder heatmap">
+        <figcaption>
+          <strong>Decoder heatmap (tdec2).</strong>
+          Pixelwise residual map between real and decoded frames.
+        </figcaption>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="figure">
+        <img src="docs/assets/tdec3_temporal.png" alt="Decoder temporal consistency">
+        <figcaption>
+          <strong>Decoder temporal consistency (tdec3).</strong>
+          Decoded temporal trajectories remain smooth over short horizons.
+        </figcaption>
+      </div>
+      <div class="figure">
+        <img src="docs/assets/tdec4_dim_perturb.png" alt="Latent perturbations">
+        <figcaption>
+          <strong>Latent perturbations (tdec4).</strong>
+          Single-dimension edits produce interpretable visual changes.
+        </figcaption>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="figure">
+        <img src="docs/assets/tsd1_speed_memory.png" alt="Speed memory diagnostic">
+        <figcaption>
+          <strong>Speed memory (tsd1).</strong>
+          Lagwise relation between latent drift and speed dynamics.
+        </figcaption>
+      </div>
+      <div class="figure">
+        <img src="docs/assets/tsd3_speed.png" alt="Speed latent alignment">
+        <figcaption>
+          <strong>Speed alignment (tsd3).</strong>
+          Correlation between speed traces and latent features.
+        </figcaption>
+      </div>
+    </div>
+
+    <div class="figure">
+      <img src="docs/assets/tE_summary.png" alt="Summary panel">
+      <figcaption>
+        <strong>Summary panel (tE).</strong>
+        Consolidated optimization and representation diagnostics for reporting.
+      </figcaption>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ───────────────────────────── ARCHITECTURE ───────────────────────── -->
+
+<section id="architecture">
+  <div class="container">
+    <h3>Architecture</h3>
+    <h2>Model design</h2>
+    <p class="section-intro">
+      The model follows the LeWM blueprint exactly, adapted for driving: actions are
+      (steering, speed, brake) multiplied across frameskip=5 timesteps and embedded via
+      a 1D convolution + MLP, then injected into the predictor through Adaptive Layer Normalization
+      at every Transformer layer.
+    </p>
+
+    <div class="arch-box">
+<pre><span class="cmt"># Encoder</span>
+<span class="kw">Encoder</span>: ViT-Small (hidden=<span class="val">384</span>, layers=<span class="val">12</span>, heads=<span class="val">6</span>, patch=<span class="val">14</span>)
+         CLS token  →  ProjMLP(384→2048→384)  →  z_t ∈ R^384
+
+<span class="cmt"># Predictor</span>
+<span class="kw">Predictor</span>: CausalTransformer(depth=<span class="val">8</span>, heads=<span class="val">16</span>, mlp=<span class="val">2048</span>, drop=<span class="val">0.1</span>)
+           Action conditioning via AdaLN at every layer
+           ProjMLP(384→2048→384) output head
+
+<span class="cmt"># Actions</span>
+<span class="kw">Actions</span>: (steer, speed, brake) × frameskip=<span class="val">5</span>  →  R^15
+          Conv1D + SiLU + Linear  →  R^384
+
+<span class="cmt"># Loss</span>
+<span class="kw">L</span> = MSE(z_hat_{t+1}, z_{t+1})
+  + λ · SIGReg(Z)          <span class="cmt"># λ=0.025, warmup 2000 steps</span>
+  + 0.02 · ReprCosine(Z)   <span class="cmt"># smoothness on nearby frames</span>
+
+Total params: <span class="val">57.7M</span>  |  Encoder: ~<span class="val">22M</span>  |  Predictor: ~<span class="val">35M</span></pre>
+    </div>
+
+    <table class="results-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>This work</th>
+          <th>PLDM</th>
+          <th>DINO-WM</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>End-to-end from pixels</td>
+          <td class="check">Yes</td>
+          <td class="check">Yes</td>
+          <td class="cross">No (frozen DINOv2)</td>
+        </tr>
+        <tr>
+          <td>Reconstruction-free</td>
+          <td class="check">Yes</td>
+          <td class="check">Yes</td>
+          <td class="check">Yes</td>
+        </tr>
+        <tr>
+          <td>Reward-free</td>
+          <td class="check">Yes</td>
+          <td class="check">Yes</td>
+          <td class="check">Yes</td>
+        </tr>
+        <tr>
+          <td>Anti-collapse guarantee</td>
+          <td class="check">SIGReg (provable)</td>
+          <td class="partial">VICReg (heuristic)</td>
+          <td class="check">Frozen encoder</td>
+        </tr>
+        <tr>
+          <td>Loss hyperparameters</td>
+          <td class="check">1 (lambda)</td>
+          <td class="cross">6</td>
+          <td class="check">0</td>
+        </tr>
+        <tr>
+          <td>Real driving data</td>
+          <td class="check">Comma2k19</td>
+          <td class="cross">Sim only</td>
+          <td class="partial">Mixed</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ───────────────────────────── TRAINING ───────────────────────────── -->
+
+<section id="training">
+  <div class="container">
+    <h3>Training details</h3>
+    <h2>Hardware, data, and configuration</h2>
+
+    <div class="prose">
+      <p>
+        Training was run on a single NVIDIA H100 80GB HBM3 GPU on Lightning.ai.
+        The VRAM utilisation shown in training logs (~1.7 GB) reflects <em>allocated</em>
+        memory as reported by <code>torch.cuda.memory_allocated()</code>. Total physical
+        VRAM consumption was ~84 GB due to PyTorch reserved buffers, the compiled model,
+        and the large batch of 128 sequences each of length 20 frames at 224x224 resolution.
+      </p>
+      <p>
+        Video decoding uses NVDEC (ffmpeg hevc_cuvid) for GPU-accelerated HEVC decode,
+        cutting preprocessing time from ~40 minutes to ~8 minutes for 4 chunks.
+        Frame normalisation uses ImageNet statistics. CAN bus signals (speed, steering)
+        and IMU data are loaded from comma2k19's <code>processed_log</code> directories
+        and interpolated onto the frame timeline.
+      </p>
+    </div>
+
+    <div class="arch-box">
+<pre><span class="cmt"># Hardware</span>
+GPU        : NVIDIA H100 80GB HBM3
+Precision  : bfloat16  +  torch.compile (reduce-overhead)
+
+<span class="cmt"># Data</span>
+Dataset    : Comma2k19 chunks 1-4 (<span class="val">789</span> segments, ~33h driving)
+Resolution : 224×224  |  frameskip=<span class="val">5</span>  |  seq_len=<span class="val">20</span>
+Train/eval : <span class="val">711</span> / <span class="val">78</span> segments  |  <span class="val">78,665</span> training windows
+
+<span class="cmt"># Optimiser</span>
+AdamW: lr=<span class="val">1e-4</span>, weight_decay=<span class="val">1e-3</span>, fused=True
+Schedule : cosine decay with 2-epoch linear warmup
+Epochs   : <span class="val">20</span>  (~<span class="val">19,660</span> steps)  |  Budget: 2.9h
+
+<span class="cmt"># Decoder (visualisation only, not part of JEPA loss)</span>
+Architecture : FC(384→1024→256×7×7) + 5× ConvTranspose2d
+Training     : <span class="val">25</span> epochs, MSE + 0.1 × edge loss, lr=3e-4</pre>
+    </div>
+  </div>
+</section>
+
+
+<!-- ───────────────────────────── CODE ───────────────────────────── -->
+
+<section id="code">
+  <div class="container">
+    <h3>Code</h3>
+    <h2>Get started</h2>
+
+    <div class="code-block">
+<pre><span class="comment"># Install dependencies</span>
+<span class="cmd">pip install</span> torch torchvision transformers einops matplotlib scipy scikit-learn av huggingface_hub
+
+<span class="comment"># Train (Lightning.ai, 4 Comma2k19 chunks, 2.9h budget)</span>
+<span class="cmd">python</span> train.py --lightning --chunks 1 2 3 4 --budget-hours 2.9
+
+<span class="comment"># Train (custom data directory)</span>
+<span class="cmd">python</span> train.py --data-dir ./comma2k19 --chunks 1 2 --budget-hours 3.0
+
+<span class="comment"># Evaluate — produces all benchmark plots</span>
+<span class="cmd">python</span> tests.py --checkpoint ./checkpoints_v5/final.pt --lightning --output-dir ./results</pre>
+    </div>
+
+    <p class="section-intro" style="margin-top:24px;">
+      The repository contains two files:
+      <code>train.py</code> — full model, data pipeline, and training loop;
+      and <code>tests.py</code> — the complete evaluation suite producing all benchmark plots above.
+    </p>
+
+    <h3 style="margin-top:40px;">Citation</h3>
+    <div class="citation">
+<pre>@article{maes2026leworldmodel,
+  title   = {LeWorldModel: Stable End-to-End Joint-Embedding Predictive Architecture from Pixels},
+  author  = {Maes, Lucas and Le Lidec, Quentin and Scieur, Damien and LeCun, Yann and Balestriero, Randall},
+  journal = {arXiv:2603.19312},
+  year    = {2026}
+}</pre>
+    </div>
+  </div>
+</section>
+
+
+<!-- ───────────────────────────── FOOTER ─────────────────────────────── -->
+
+<footer>
+  <div class="container">
+    <p>
+      Based on <a href="https://arxiv.org/abs/2603.19312">LeWorldModel (arXiv:2603.19312)</a>
+      by Maes, Le Lidec, Scieur, LeCun, Balestriero.
+      Trained on <a href="https://huggingface.co/datasets/commaai/comma2k19">Comma2k19</a>.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

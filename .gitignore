@@ -1,0 +1,50 @@
+# Data
+comma2k19_data/
+processed_data/
+*.npy
+
+# Checkpoints
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Notebooks (raw logs, not clean)
+_MConverter.eu_*.md
+vertopal.com_*.txt
+
+# Keep only clean training entrypoint
+lewm_v5_final.py
+lewm_v5_final (1).py
+
+# PDF (link to arXiv instead)
+lewm.pdf
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment
+.env
+.venv/
+env/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
